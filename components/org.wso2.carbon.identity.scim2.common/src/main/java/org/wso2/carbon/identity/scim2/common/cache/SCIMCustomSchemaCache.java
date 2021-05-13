@@ -25,6 +25,7 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.scim2.common.utils.SCIMCustomSchemaProcessor;
 import org.wso2.carbon.identity.scim2.common.exceptions.IdentitySCIMException;
 import org.wso2.charon3.core.attributes.SCIMCustomAttribute;
+import org.wso2.charon3.core.config.SCIMCustomSchemaExtensionBuilder;
 
 import java.util.List;
 
@@ -72,13 +73,24 @@ public class SCIMCustomSchemaCache extends BaseCache<SCIMCustomSchemaCacheKey, S
                     CUSTOM_USER_SCHEMA_URI);
             cacheEntry = new SCIMCustomSchemaCacheEntry(schemaConfigurations);
             super.addToCache(cacheKey, cacheEntry);
+            if (log.isDebugEnabled()) {
+                log.debug("Successfully added scim custom attributes into SCIMCustomSchemaCache for the tenant:"
+                        + tenantId);
+            }
         }
         return cacheEntry;
     }
 
     public void clearCustomAttributesFromCacheByTenantId(int tenantId) {
 
+        if (log.isDebugEnabled()) {
+            log.debug("Clearing SCIMCustomSchemaCache entry for the tenant with id: " + tenantId);
+        }
         SCIMCustomSchemaCacheKey cacheKey = new SCIMCustomSchemaCacheKey(tenantId);
         super.clearCacheEntry(cacheKey);
+        SCIMCustomSchemaExtensionBuilder.getInstance().getExtensionSchemaForAllTenant().remove(tenantId);
+        if (log.isDebugEnabled()) {
+            log.debug("Cleared custom attributes from the Extension Builder for the tenant with id: " + tenantId);
+        }
     }
 }

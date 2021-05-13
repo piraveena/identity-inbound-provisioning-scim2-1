@@ -38,8 +38,10 @@ public class SCIMClaimOperationEventHandler extends AbstractEventHandler {
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
 
+        int tenantId = (int) event.getEventProperties().get(IdentityEventConstants.EventProperty.TENANT_ID);
         if (log.isDebugEnabled()) {
-            log.debug(event.getEventName() + " event received to SCIMClaimOperationEventHandler.");
+            log.debug(event.getEventName() + " event received to SCIMClaimOperationEventHandler for the tenant with " +
+                    "Id: "+ tenantId);
         }
 
         if (!SCIMCommonUtils.isCustomSchemaEnabled()) {
@@ -51,10 +53,11 @@ public class SCIMClaimOperationEventHandler extends AbstractEventHandler {
 
         String claimDialectUri =
                 (String) event.getEventProperties().get(IdentityEventConstants.EventProperty.CLAIM_DIALECT_URI);
-        if (StringUtils.isNotBlank(claimDialectUri) && !(claimDialectUri.equalsIgnoreCase(CUSTOM_USER_SCHEMA_URI) ||
-        claimDialectUri.equalsIgnoreCase(WSO2_CARBON_DIALECT))) {
+        if (StringUtils.isNotBlank(claimDialectUri) && !(claimDialectUri.equalsIgnoreCase(CUSTOM_USER_SCHEMA_URI)
+                || claimDialectUri.equalsIgnoreCase(WSO2_CARBON_DIALECT))) {
             if (log.isDebugEnabled()) {
-                log.debug("Needs to handle only if this claim update happens to SCIM2 custom schema or local claim dialect.");
+                log.debug("Needs to handle only if this claim update happens to SCIM2 custom schema or local claim "
+                        + "dialect for tenant with Id: "+ tenantId);
             }
             return;
         }
@@ -69,7 +72,6 @@ public class SCIMClaimOperationEventHandler extends AbstractEventHandler {
             return;
         }
 
-        int tenantId = (int) event.getEventProperties().get(IdentityEventConstants.EventProperty.TENANT_ID);
         SCIMCustomSchemaCache.getInstance().clearCustomAttributesFromCacheByTenantId(tenantId);
     }
 

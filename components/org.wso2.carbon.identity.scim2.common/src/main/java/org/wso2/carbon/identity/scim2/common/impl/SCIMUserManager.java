@@ -5565,11 +5565,18 @@ public class SCIMUserManager implements UserManager {
         return rolesList;
     }
 
+    /**
+     * Return list of attributes in the custom schema of the tenant.
+     *
+     * @return Return list of attributes.
+     * @throws CharonException
+     */
     @Override
-    public List<Attribute> getCustomUserSchema() throws CharonException {
+    public List<Attribute> getCustomUserSchemaAttributes() throws CharonException {
 
         if (!SCIMCommonUtils.isCustomSchemaEnabled()) {
-            throw new CharonException("Custom schema is not enabled");
+            log.error("Custom schema is disabled in server level");
+            return null;
         }
         List<Attribute> customUserSchemaAttributesList = null;
 
@@ -5588,6 +5595,12 @@ public class SCIMUserManager implements UserManager {
         return customUserSchemaAttributesList;
     }
 
+    /**
+     * Returns scim2 custom schema of the tenant.
+     *
+     * @return Returns scim2 custom schema
+     * @throws CharonException
+     */
     @Override
     public AttributeSchema getCustomUserSchemaExtension() throws CharonException {
 

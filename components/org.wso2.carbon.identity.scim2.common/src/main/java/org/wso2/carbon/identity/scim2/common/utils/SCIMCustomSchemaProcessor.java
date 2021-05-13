@@ -142,31 +142,37 @@ public class SCIMCustomSchemaProcessor {
      * Builds subattributes for complex attributes
      *
      * @param customSchemaClaims       Map of local claim and external claim.
-     * @param attributeCharacteristics Map of all attribute properties.
+     * @param properties Map of all attribute properties.
      * @return Subattributes of a complex attribute.
      */
     private String buildSubAttributes(Map<ExternalClaim, LocalClaim> customSchemaClaims,
-                                      Map<String, String> attributeCharacteristics) {
+                                      Map<String, String> properties) {
 
-        Map<String, String> localClaimsToCustomClaims = new HashMap<>();
+        Map<String, String> localClaimsToAttributeNameMap = new HashMap<>();
         StringBuilder scimSubAttributesString = new StringBuilder();
         for (Map.Entry<ExternalClaim, LocalClaim> mappedClaims : customSchemaClaims.entrySet()) {
             // Do the mapping of local claim to attribute name.
             String name = getAttributeName(mappedClaims.getKey().getClaimURI(),
                     mappedClaims.getKey().getClaimDialectURI(), false);
-            localClaimsToCustomClaims.put(mappedClaims.getValue().getClaimURI(), name);
+            localClaimsToAttributeNameMap.put(mappedClaims.getValue().getClaimURI(), name);
         }
 
         /*
          * If the data type is complex and if the attribute has subattributes in local claim dialect with space
          * separated, split them and get the attribute name of the each localclaim.
          */
-        if ((StringUtils.isNotBlank(attributeCharacteristics.get(SCIMConfigConstants.DATA_TYPE))) && ("complex".equalsIgnoreCase(attributeCharacteristics.get(SCIMConfigConstants.DATA_TYPE)))) {
-            String subAttributesLocalClaimsString = attributeCharacteristics.get(SCIMConfigConstants.SUB_ATTRIBUTES);
+        if ((StringUtils.isNotBlank(properties.get(SCIMConfigConstants.DATA_TYPE))) && ("complex".equalsIgnoreCase(properties.get(SCIMConfigConstants.DATA_TYPE)))) {
+            String subAttributesLocalClaimsString = properties.get(SCIMConfigConstants.SUB_ATTRIBUTES);
             if (StringUtils.isNotBlank(subAttributesLocalClaimsString) && !"null".equalsIgnoreCase(subAttributesLocalClaimsString)) {
-                String[] subAttributesClaims = subAttributesLocalClaimsString.split(" ");
-                for (String subAttributesClaim : subAttributesClaims) {
-                    scimSubAttributesString.append(localClaimsToCustomClaims.get(subAttributesClaim)).append(" ");
+                String[] subAttributes = subAttributesLocalClaimsString.split(" ");
+                for (String localClaim : subAttributes) {
+                    String attributeName = localClaimsToAttributeNameMap.get(localClaim);
+                    if (StringUtils.isNotBlank(attributeName)) {
+                        scimSubAttributesString.append(attributeName).append(" ");
+                    } else {
+                        // Local claim is added as a subattribute. But it does not have a mapped custom scim claim.
+                        log.warn("Local claim: " + localClaim + " does not have a mapped custom claim");
+                    }
                 }
             }
         }
