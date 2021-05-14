@@ -42,6 +42,7 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.mgt.policy.PolicyViolationException;
 import org.wso2.carbon.identity.provisioning.IdentityProvisioningConstants;
 import org.wso2.carbon.identity.scim2.common.DAO.GroupDAO;
+import org.wso2.carbon.identity.scim2.common.cache.SCIMAttributeSchemaCache;
 import org.wso2.carbon.identity.scim2.common.exceptions.IdentitySCIMException;
 import org.wso2.carbon.identity.scim2.common.extenstion.SCIMUserStoreErrorResolver;
 import org.wso2.carbon.identity.scim2.common.extenstion.SCIMUserStoreException;
@@ -74,7 +75,6 @@ import org.wso2.charon3.core.attributes.Attribute;
 import org.wso2.charon3.core.attributes.ComplexAttribute;
 import org.wso2.charon3.core.attributes.MultiValuedAttribute;
 import org.wso2.charon3.core.attributes.SimpleAttribute;
-import org.wso2.charon3.core.config.SCIMCustomSchemaExtensionBuilder;
 import org.wso2.charon3.core.config.SCIMUserSchemaExtensionBuilder;
 import org.wso2.charon3.core.exceptions.BadRequestException;
 import org.wso2.charon3.core.exceptions.CharonException;
@@ -120,6 +120,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.wso2.carbon.identity.core.util.IdentityCoreConstants.MULTI_ATTRIBUTE_SEPARATOR;
+import static org.wso2.carbon.identity.scim2.common.utils.SCIMCommonUtils.getCustomSchemaURI;
 import static org.wso2.carbon.identity.scim2.common.utils.SCIMCommonUtils
         .isFilterUsersAndGroupsOnlyFromPrimaryDomainEnabled;
 import static org.wso2.carbon.identity.scim2.common.utils.SCIMCommonUtils.isFilteringEnhancementsEnabled;
@@ -1993,10 +1994,8 @@ public class SCIMUserManager implements UserManager {
                 String extensionURI = SCIMUserSchemaExtensionBuilder.getInstance().getExtensionSchema().getURI();
                 attributes.putAll(getMappedAttributes(extensionURI, domainName));
             }
-            if (SCIMCustomSchemaExtensionBuilder.getInstance().getExtensionSchema(tenantId) != null) {
-                String customSchemaURI = SCIMCustomSchemaExtensionBuilder.getInstance().getExtensionSchema(tenantId).getURI();
-                attributes.putAll(getMappedAttributes(customSchemaURI, domainName));
-            }
+            attributes.putAll(getMappedAttributes(getCustomSchemaURI(), domainName));
+
         } else {
             try {
                 ClaimMapping[] userClaims;
@@ -2011,10 +2010,7 @@ public class SCIMUserManager implements UserManager {
                             SCIMUserSchemaExtensionBuilder.getInstance().getExtensionSchema().getURI());
                 }
 
-                if (SCIMCustomSchemaExtensionBuilder.getInstance().getExtensionSchema(tenantId) != null) {
-                    customClaims = carbonClaimManager.getAllClaimMappings(
-                            SCIMCustomSchemaExtensionBuilder.getInstance().getExtensionSchema(tenantId).getURI());
-                }
+                customClaims = carbonClaimManager.getAllClaimMappings(getCustomSchemaURI());
                 for (ClaimMapping claim : coreClaims) {
                     attributes.put(claim.getClaim().getClaimUri(), claim.getMappedAttribute(domainName));
                 }
@@ -5581,7 +5577,7 @@ public class SCIMUserManager implements UserManager {
         List<Attribute> customUserSchemaAttributesList = null;
 
         Map<ExternalClaim, LocalClaim> scimClaimToLocalClaimMap =
-                getMappedLocalClaimsForDialect(SCIMConstants.CUSTOM_USER_SCHEMA_URI, tenantDomain);
+                getMappedLocalClaimsForDialect(getCustomSchemaURI(), tenantDomain);
 
         Map<String, Attribute> filteredAttributeMap = getAllScimSchemaAttributes(scimClaimToLocalClaimMap);
         Map<String, Attribute> hierarchicalAttributeMap =
@@ -5596,17 +5592,17 @@ public class SCIMUserManager implements UserManager {
     }
 
     /**
-     * Returns scim2 custom schema of the tenant.
+     * Returns SCIM2 custom AttributeSchema of the tenant.
      *
      * @return Returns scim2 custom schema
      * @throws CharonException
      */
     @Override
-    public AttributeSchema getCustomUserSchemaExtension() throws CharonException {
+    public AttributeSchema getCustomUserSchemaExtension() {
 
         if (tenantDomain != null) {
-            return SCIMCustomSchemaExtensionBuilder.getInstance().getExtensionSchema(
-                    IdentityTenantUtil.getTenantId(tenantDomain));
+            return SCIMAttributeSchemaCache.getInstance().
+                    getSCIMCustomAttributeSchemaByTenant(IdentityTenantUtil.getTenantId(tenantDomain));
         }
         return null;
     }

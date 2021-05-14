@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.wso2.charon3.core.schema.SCIMConstants.CUSTOM_USER_SCHEMA_URI;
+
 /**
  * This class is to be used as a Util class for SCIM common things.
  * TODO:rename class name.
@@ -346,7 +348,7 @@ public class SCIMCommonUtils {
             }
 
             Map<String, String> customExtensionClaims = ClaimMetadataHandler.getInstance()
-                    .getMappingsMapFromOtherDialectToCarbon(SCIMCustomSchemaExtensionBuilder.getInstance().getURI(), null, spTenantDomain, false);
+                    .getMappingsMapFromOtherDialectToCarbon(getCustomSchemaURI(), null, spTenantDomain, false);
             scimToLocalClaimMap.putAll(customExtensionClaims);
 
             return scimToLocalClaimMap;
@@ -547,5 +549,14 @@ public class SCIMCommonUtils {
 
         return Boolean.parseBoolean(SCIMConfigProcessor.getInstance().getProperty
                 (SCIMCommonConstants.CUSTOM_USER_SCHEMA_ENABLED));
+    }
+
+    /**
+     * Return custom schema URI.
+     * @return custom schema URI.
+     */
+    public static String getCustomSchemaURI() {
+
+        return CUSTOM_USER_SCHEMA_URI;
     }
 }

@@ -23,13 +23,13 @@ import java.io.Serializable;
 /**
  * SCIM Custom Schema Cache key. This contains tenant Id as the key.
  */
-public class SCIMCustomSchemaCacheKey implements Serializable {
+public class SCIMAttributeSchemaCacheKey implements Serializable {
 
     private static final long serialVersionUID = -1332814776225574523L;
 
     private final int tenantId;
 
-    public SCIMCustomSchemaCacheKey(int tenantId) {
+    public SCIMAttributeSchemaCacheKey(int tenantId) {
 
         this.tenantId = tenantId;
     }
@@ -46,11 +46,11 @@ public class SCIMCustomSchemaCacheKey implements Serializable {
             return true;
         }
 
-        if (!(o instanceof SCIMCustomSchemaCacheKey)) {
+        if (!(o instanceof SCIMAttributeSchemaCacheKey)) {
             return false;
         }
 
-        SCIMCustomSchemaCacheKey that = (SCIMCustomSchemaCacheKey) o;
+        SCIMAttributeSchemaCacheKey that = (SCIMAttributeSchemaCacheKey) o;
         return tenantId == that.tenantId;
     }
 

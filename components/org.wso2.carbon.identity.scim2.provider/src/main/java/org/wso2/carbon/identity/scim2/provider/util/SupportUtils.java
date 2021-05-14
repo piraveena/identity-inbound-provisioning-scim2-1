@@ -25,14 +25,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
-import org.wso2.carbon.identity.scim2.common.cache.SCIMCustomSchemaCache;
-import org.wso2.carbon.identity.scim2.common.cache.SCIMCustomSchemaCacheEntry;
+import org.wso2.carbon.identity.scim2.common.cache.SCIMAttributeSchemaCache;
 import org.wso2.carbon.identity.scim2.common.exceptions.IdentitySCIMException;
-import org.wso2.carbon.identity.scim2.common.impl.SCIMRoleManager;
-import org.wso2.carbon.identity.scim2.common.utils.SCIMCommonConstants;
 import org.wso2.carbon.identity.scim2.common.utils.SCIMCommonUtils;
-import org.wso2.carbon.identity.scim2.common.utils.SCIMConfigProcessor;
+import org.wso2.carbon.identity.scim2.common.utils.SCIMCustomSchemaProcessor;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
+import org.wso2.charon3.core.attributes.SCIMCustomAttribute;
 import org.wso2.charon3.core.config.SCIMCustomSchemaExtensionBuilder;
 import org.wso2.charon3.core.exceptions.BadRequestException;
 import org.wso2.charon3.core.exceptions.CharonException;
@@ -40,9 +38,13 @@ import org.wso2.charon3.core.exceptions.InternalErrorException;
 import org.wso2.charon3.core.exceptions.NotImplementedException;
 import org.wso2.charon3.core.extensions.UserManager;
 import org.wso2.charon3.core.protocol.SCIMResponse;
+import org.wso2.charon3.core.schema.AttributeSchema;
 
 import javax.ws.rs.core.Response;
+import java.util.List;
 import java.util.Map;
+
+import static org.wso2.carbon.identity.scim2.common.utils.SCIMCommonUtils.getCustomSchemaURI;
 
 /**
  * This class contains the common utils used at HTTP level
@@ -118,22 +120,20 @@ public class SupportUtils {
         try {
             if (userManager.getCustomUserSchemaExtension() != null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Scim2 custom attribute schema is found in the UserManager for tenant with Id: "
-                            + tenantId + ". Hence skip building the Extension Builder");
+                    log.debug("Scim2 custom attribute schema is found in the UserManager for tenant with Id: " +
+                            "" + tenantId + ". Hence skip building the Extension Builder");
                 }
                 return;
             }
-            SCIMCustomSchemaCacheEntry customSchemaCacheEntry =
-                    SCIMCustomSchemaCache.getInstance().getCustomAttributesFromCacheByTenantId(tenantId);
-            if (customSchemaCacheEntry == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Could not find any Scim2 custom attributes for tenant with Id: " + tenantId);
-                }
-                return;
-            }
+
             try {
-                SCIMCustomSchemaExtensionBuilder.getInstance().buildUserCustomSchemaExtension(tenantId,
-                        customSchemaCacheEntry.getSCIMCustomSchemaAttributes());
+                SCIMCustomSchemaProcessor scimCustomSchemaProcessor = new SCIMCustomSchemaProcessor();
+                List<SCIMCustomAttribute> attributes =
+                        scimCustomSchemaProcessor.getCustomAttributes(IdentityTenantUtil.getTenantDomain(tenantId),
+                                getCustomSchemaURI());
+                AttributeSchema attributeSchema = SCIMCustomSchemaExtensionBuilder.getInstance()
+                        .buildUserCustomSchemaExtension(attributes, getCustomSchemaURI());
+                SCIMAttributeSchemaCache.getInstance().addSCIMCustomAttributeSchema(tenantId, attributeSchema);
             } catch (InternalErrorException e) {
                 throw new CharonException("Error while building scim custom schema", e);
             }

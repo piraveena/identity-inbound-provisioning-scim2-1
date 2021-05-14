@@ -18,27 +18,26 @@
 
 package org.wso2.carbon.identity.scim2.common.cache;
 
-import org.wso2.charon3.core.attributes.SCIMCustomAttribute;
+import org.wso2.charon3.core.schema.AttributeSchema;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * This stores list of custom attributes  of SCIM2 custom schema.
  */
-public class SCIMCustomSchemaCacheEntry implements Serializable {
+public class SCIMAttributeSchemaCacheEntry implements Serializable {
 
     private static final long serialVersionUID = -3352517105334401998L;
 
-    private final List<SCIMCustomAttribute> schemaConfigs;
+    private final AttributeSchema attributeSchema;
 
-    public SCIMCustomSchemaCacheEntry(List<SCIMCustomAttribute> scimCustomSchemaAttributes) {
+    public SCIMAttributeSchemaCacheEntry(AttributeSchema attributeSchema) {
 
-        this.schemaConfigs = scimCustomSchemaAttributes;
+        this.attributeSchema = attributeSchema;
     }
 
-    public List<SCIMCustomAttribute> getSCIMCustomSchemaAttributes() {
+    public AttributeSchema getSCIMCustomAttributeSchema() {
 
-        return schemaConfigs;
+        return attributeSchema;
     }
 }
