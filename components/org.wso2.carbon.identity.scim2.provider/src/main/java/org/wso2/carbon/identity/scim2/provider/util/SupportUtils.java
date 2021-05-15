@@ -132,7 +132,7 @@ public class SupportUtils {
                         scimCustomSchemaProcessor.getCustomAttributes(IdentityTenantUtil.getTenantDomain(tenantId),
                                 getCustomSchemaURI());
                 AttributeSchema attributeSchema = SCIMCustomSchemaExtensionBuilder.getInstance()
-                        .buildUserCustomSchemaExtension(attributes, getCustomSchemaURI());
+                        .buildUserCustomSchemaExtension(attributes);
                 SCIMAttributeSchemaCache.getInstance().addSCIMCustomAttributeSchema(tenantId, attributeSchema);
             } catch (InternalErrorException e) {
                 throw new CharonException("Error while building scim custom schema", e);

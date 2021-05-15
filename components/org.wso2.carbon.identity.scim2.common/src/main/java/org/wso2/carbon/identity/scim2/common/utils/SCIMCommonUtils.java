@@ -553,10 +553,16 @@ public class SCIMCommonUtils {
 
     /**
      * Return custom schema URI.
+     *
      * @return custom schema URI.
      */
     public static String getCustomSchemaURI() {
 
+        String customSchemaURI =
+                SCIMConfigProcessor.getInstance().getProperty(SCIMCommonConstants.CUSTOM_USER_SCHEMA_URI);
+        if (StringUtils.isNotBlank(customSchemaURI)) {
+            return customSchemaURI;
+        }
         return CUSTOM_USER_SCHEMA_URI;
     }
 }
